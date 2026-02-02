@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-2.0.6-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Node.js-18%2B-green?style=for-the-badge" alt="Node Version">
   <img src="https://img.shields.io/badge/License-ISC-orange?style=for-the-badge" alt="License">
 </p>
@@ -42,6 +42,15 @@ Powered by the latest **Gemini Flash** models (Lite 2.5, 2.5, and 3).
 
 <p align="center">
   <img src="assets/A.png" width="600" alt="Flash Model Screenshot">
+</p>
+
+---
+
+### 📘 AI README Generator
+Instantly generate a beautiful README.md for your project with smart context selection.
+
+<p align="center">
+  <img src="assets/readme.png" width="600" alt="README Generator Screenshot">
 </p>
 
 ---
@@ -83,6 +92,12 @@ Before you push, get a second pair of eyes. Identify logic errors or exposed sec
 git-mood review
 ```
 
+#### 📚 AI README Generator
+Need documentation? Let AI analyze your project and generate a professional README.
+```bash
+git-mood readme
+```
+
 ---
 
 ## 🎮 Commands
@@ -91,6 +106,7 @@ git-mood review
 - `git-mood commit` — Generate message, commit locally, and optional push.
 - `git-mood review` — AI analysis of your current diff (unstaged + staged).
 - `git-mood model` — Quickly swap between Gemini 2.5 Flash-Lite, Flash 2.5, or Flash 3.
+- `git-mood readme` — Generate a professional README.md for your project.
 
 ---
 
