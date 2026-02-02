@@ -1,7 +1,7 @@
 # git-mood
 
 <p align="center">
-  <img src="assets/demo2.gif" alt="git-mood in action" width="600px" style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+  <img src="assets/demo3.gif" alt="git-mood in action" width="600px" style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
 </p>
 
 <p align="center">
