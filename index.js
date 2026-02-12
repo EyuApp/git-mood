@@ -49,7 +49,7 @@ function parseCommitSuggestion(text) {
         body: String(parsed.body ?? '').trim(),
       };
     } catch {
-    
+      // fall through
     }
   }
 
