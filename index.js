@@ -150,7 +150,7 @@ async function generateReadme() {
 
     const scopeAnswer = await inquirer.prompt([
       {
-        type: '',
+        type: 'select',
         name: 'scope',
         message: 'Choose context for README generation:',
         choices: [
@@ -513,7 +513,7 @@ async function modelCLI() {
 program
   .name('git-mood')
   .description('AI-Powered Git Assistant — conventional commits & code review')
-  .version('2.0.6');
+  .version('2.0.7');
 
 program.command('setup').description('Set Gemini API key and model').action(setupCLI);
 program.command('model').description('Change Gemini model').action(modelCLI);
