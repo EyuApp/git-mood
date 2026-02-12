@@ -3,13 +3,25 @@ import { program } from 'commander';
 import simpleGit from 'simple-git';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import inquirerPkg from 'inquirer';
 import Conf from 'conf';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const config = new Conf({ projectName: 'git-mood' });
 const git = simpleGit();
+
+// Inquirer has changed module shapes across versions (ESM/CJS interop).
+// Normalize to a single `prompt()` function to avoid runtime "prompt is not a function".
+const inquirer = (inquirerPkg && typeof inquirerPkg === 'object' && 'default' in inquirerPkg)
+  ? inquirerPkg.default
+  : inquirerPkg;
+const inqPrompt = (inquirer && typeof inquirer === 'object' && typeof inquirer.prompt === 'function')
+  ? inquirer.prompt.bind(inquirer)
+  : (typeof inquirer === 'function' ? inquirer : undefined);
+if (typeof inqPrompt !== 'function') {
+  throw new Error("Inquirer failed to load: expected a 'prompt' function.");
+}
 
 const MODELS = [
   { id: 'gemini-2.5-flash-lite', name: 'Flash-Lite 2.5 (New & Lightest)' },
@@ -148,7 +160,7 @@ async function generateReadme() {
     const readmePath = path.join(rootDir, 'README.md');
     const hasReadme = await fileExists(readmePath);
 
-    const scopeAnswer = await inquirer.prompt([
+    const scopeAnswer = await inqPrompt([
       {
         type: 'select',
         name: 'scope',
@@ -163,7 +175,7 @@ async function generateReadme() {
     ]);
 
     if (hasReadme) {
-      const overwriteAnswer = await inquirer.prompt([
+      const overwriteAnswer = await inqPrompt([
         {
           type: 'confirm',
           name: 'overwrite',
@@ -226,7 +238,7 @@ async function generateReadme() {
     }
 
     if (isRepo) {
-      const stageAnswer = await inquirer.prompt([
+      const stageAnswer = await inqPrompt([
         {
           type: 'confirm',
           name: 'stage',
@@ -239,7 +251,7 @@ async function generateReadme() {
         await git.add(['README.md']);
         console.log(chalk.green('✅ Staged README.md'));
 
-        const commitNowAnswer = await inquirer.prompt([
+        const commitNowAnswer = await inqPrompt([
           {
             type: 'confirm',
             name: 'commitNow',
@@ -289,7 +301,7 @@ async function generateCommit(options = {}) {
 
     const model = getAI();
     // Prompt asking for a conventional commit message
-    const prompt = `
+    const aiPrompt = `
       You are an expert developer. Generate a git commit subject and an extended description for these changes.
       The subject MUST follow "Conventional Commits" format (e.g., 'feat: add login', 'fix: resolve crash').
       Keep the subject <= 72 characters and do not wrap it in quotes.
@@ -301,7 +313,7 @@ async function generateCommit(options = {}) {
       ${diff.substring(0, 5000)}
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent(aiPrompt);
     const suggestion = parseCommitSuggestion(result.response.text());
     const subject = suggestion.subject;
     const body = suggestion.body;
@@ -318,7 +330,7 @@ async function generateCommit(options = {}) {
     let finalBody = body;
 
     if (options.interactive) {
-      const edited = await inquirer.prompt([
+      const edited = await inqPrompt([
         {
           type: 'input',
           name: 'subject',
@@ -335,7 +347,7 @@ async function generateCommit(options = {}) {
       finalSubject = String(edited.subject ?? '').trim();
       finalBody = String(edited.body ?? '').trim();
     } else {
-      const nextAction = await inquirer.prompt([
+      const nextAction = await inqPrompt([
         {
           type: 'select',
           name: 'action',
@@ -355,7 +367,7 @@ async function generateCommit(options = {}) {
       }
 
       if (nextAction.action === 'edit_commit') {
-        const edited = await inquirer.prompt([
+        const edited = await inqPrompt([
           {
             type: 'input',
             name: 'subject',
@@ -384,7 +396,7 @@ async function generateCommit(options = {}) {
     console.log(chalk.green("✅ Committed locally!"));
 
     // 3. NEW STEP: Ask user to PUSH
-    const pushAnswer = await inquirer.prompt([
+    const pushAnswer = await inqPrompt([
       {
         type: 'confirm',
         name: 'shouldPush',
@@ -404,7 +416,7 @@ async function generateCommit(options = {}) {
           if (pushError.message.includes('fetch first') || pushError.message.includes('rejected')) {
               console.log(chalk.yellow("\n⚠️  GitHub is ahead of your computer."));
               
-              const pullAnswer = await inquirer.prompt([
+              const pullAnswer = await inqPrompt([
                   {
                       type: 'confirm',
                       name: 'shouldPull',
@@ -449,7 +461,7 @@ async function codeReview() {
     process.stdout.write(chalk.magenta("🕵️  Scanning code for bugs and smell..."));
 
     const model = getAI();
-    const prompt = `
+    const aiPrompt = `
       Review this code diff like a Senior Engineer.
       1. Identify potential bugs (logic errors, memory leaks).
       2. Point out security risks (exposed keys, unsafe inputs).
@@ -461,7 +473,7 @@ async function codeReview() {
       ${diff.substring(0, 8000)}
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent(aiPrompt);
     console.log("\r" + " ".repeat(50) + "\r");
 
     console.log(chalk.bold.magenta("\n🛡️  AI CODE REVIEW REPORT 🛡️"));
@@ -474,7 +486,7 @@ async function codeReview() {
 
 // --- COMMAND 3: SETUP ---
 async function setupCLI() {
-  const answers = await inquirer.prompt([
+  const answers = await inqPrompt([
     {
       type: 'input',
       name: 'apiKey',
@@ -495,7 +507,7 @@ async function setupCLI() {
 
 // --- COMMAND 4: MODEL (change model) ---
 async function modelCLI() {
-  const answer = await inquirer.prompt([
+  const answer = await inqPrompt([
     {
       type: 'select',
       name: 'modelId',
@@ -513,7 +525,7 @@ async function modelCLI() {
 program
   .name('git-mood')
   .description('AI-Powered Git Assistant — conventional commits & code review')
-  .version('2.0.7');
+  .version('2.0.9');
 
 program.command('setup').description('Set Gemini API key and model').action(setupCLI);
 program.command('model').description('Change Gemini model').action(modelCLI);
