@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.9-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-2.1.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Node.js-18%2B-green?style=for-the-badge" alt="Node Version">
   <img src="https://img.shields.io/badge/License-ISC-orange?style=for-the-badge" alt="License">
 </p>

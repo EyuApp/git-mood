@@ -24,11 +24,23 @@ if (typeof inqPrompt !== 'function') {
 }
 
 const MODELS = [
-  { id: 'gemini-2.5-flash-lite', name: 'Flash-Lite 2.5 (New & Lightest)' },
-  { id: 'gemini-2.5-flash', name: 'Flash 2.5 (Fast & Balanced)' },
-  { id: 'gemini-3-flash-preview', name: 'Flash 3 (Newest)' },
+  // Gemini 3.5 Series (Latest Frontier Models)
+  { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash (Agentic & High-Speed)' },
+
+  // Gemini 3.1 Series (Advanced Core Performance)
+  { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro (Flagship Reasoning - Paid)' },
+  { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash-Lite (High-Volume Automation)' },
+
+  // Gemini 3 Series (Stable Infrastructure)
+  { id: 'gemini-3-flash', name: 'Gemini 3 Flash (Fast Modulated Reasoning)' },
+  { id: 'gemini-3-pro', name: 'Gemini 3 Pro (Paid Complex Reasoning)' },
+
+  // Gemini 2.5 Series (Stable Long-Context)
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro (Paid Deep Reasoning)' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash (Balanced Price-Performance)' },
+  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash-Lite (Low Latency)' },
 ];
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+const DEFAULT_MODEL = 'gemini-3.5-flash';
 
 function getModelId() {
   return config.get('model_id') ?? DEFAULT_MODEL;
@@ -279,7 +291,7 @@ function getAI() {
   const apiKey = config.get('gemini_key');
   if (!apiKey) {
     console.log(chalk.red("❌ No API Key found! Run 'git-mood setup' first."));
-    process.exit(1);
+    cleanupAndExit(1);
   }
   const genAI = new GoogleGenerativeAI(apiKey);
   const modelId = getModelId();
@@ -525,7 +537,7 @@ async function modelCLI() {
 program
   .name('git-mood')
   .description('AI-Powered Git Assistant — conventional commits & code review')
-  .version('2.0.9');
+  .version('2.1.0');
 
 program.command('setup').description('Set Gemini API key and model').action(setupCLI);
 program.command('model').description('Change Gemini model').action(modelCLI);
@@ -555,14 +567,14 @@ function cleanupAndExit(code) {
         // ignore
       }
     }
-    process.stdin.pause();
-    if (typeof process.stdin.unref === 'function') {
-      process.stdin.unref();
-    }
   } catch {
     // ignore
   }
-  process.exit(code);
+  // Delay the exit slightly to allow libuv handles/threads (e.g., keep-alive fetch connections)
+  // to clean up and close gracefully, preventing Windows assertion crashes.
+  setTimeout(() => {
+    process.exit(code);
+  }, 100);
 }
 
 await program
